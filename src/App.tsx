@@ -10,6 +10,7 @@ function App() {
       </header>
       <CreateItemForm items={items} setItems={setItems} />
       <LooseItemsBox items={items} setItems={setItems} />
+      <DisplayBox items={items} setItems={setItems} />
     </div>
   );
 }
@@ -32,7 +33,7 @@ const CreateItemForm = (props: createItemProps) => {
   };
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form className="creatingItemClass" onSubmit={handleSubmit}>
         <label>
           Item:
           <input
@@ -53,32 +54,32 @@ const LooseItemsBox = (props: {
   items: itemsType;
   setItems: (i: itemsType) => void;
 }) => {
-  const [itemStatus, setItemStatus] = React.useState("backlog");
-
   const { items, setItems } = props;
 
   const handleChange = (evt: any) => {
     evt.preventDefault();
-    setItemStatus(evt.target.value);
-    let itemStatusChanged = items.find((item) => item.name === evt.target.name);
-    if (itemStatusChanged !== undefined) itemStatusChanged.status = itemStatus;
-    setItems(items);
-    setItemStatus("backlog");
+    const newItems = items.map((item) => {
+      if (item.name === evt.target.name) {
+        return { name: String(evt.target.name), status: evt.target.value };
+      }
+      return item;
+    });
+    setItems(newItems);
   };
   return (
     <>
       {items.map((item, index) => {
         const itemName = item.name;
         return (
-          <div key={`${item.name}${index}`}>
+          <div className="looseItem" key={`${item.name}${index}`}>
             <form>
               {itemName !== "" ? (
                 <div>
-                  <label htmlFor={itemName}>item: {itemName} </label>
+                  <label style={{minWidth: '150px'}} htmlFor={itemName}>item: {itemName} </label>
                   <select name={itemName} onChange={handleChange}>
                     <option value="backlog">Backlog</option>
                     <option value="todo">To do</option>
-                    <option value="block">Blocked</option>
+                    <option value="blocked">Blocked</option>
                     <option value="inprogress">In progress</option>
                     <option value="test">Test/Review</option>
                     <option value="done">Done</option>
@@ -90,5 +91,71 @@ const LooseItemsBox = (props: {
         );
       })}
     </>
+  );
+};
+
+const DisplayBox = (props: {
+  items: itemsType;
+  setItems: (i: itemsType) => void;
+}) => {
+  const { items, setItems } = props;
+  return (
+    <div className="DisplayBox">
+      <StatusBox items={items} setItems={setItems} />
+    </div>
+  );
+};
+
+const StatusBox = (props: {
+  items: itemsType;
+  setItems: (i: itemsType) => void;
+}) => {
+  const { items, setItems } = props;
+  return (
+    <>
+      {allStatus.map((status) => (
+        <div className="statusBox" key={status.key}>
+          <h1>{status.value}</h1>
+          <Item items={items} setItems={setItems} status={status.key} />
+        </div>
+      ))}
+    </>
+  );
+};
+
+const allStatus = [
+  { key: "backlog", value: "Backlog" },
+  { key: "todo", value: "To do" },
+  { key: "blocked", value: "Blocked" },
+  { key: "inprogress", value: "In Progress" },
+  { key: "test", value: "Test/Review" },
+  { key: "done", value: "Done" },
+];
+// const allStatus = [
+//    'backlog',
+//   'todo',
+//    'blocked',
+//    'inprogress',
+//    'test',
+//    'done'
+// ];
+
+const Item = (props: {
+  items: itemsType;
+  setItems: (i: itemsType) => void;
+  status: string;
+}) => {
+  const { items, setItems, status } = props;
+  return (
+    <div>
+      {items
+        .filter((item) => item.name !== "")
+        .filter((item) => item.status === status)
+        .map((item, index) => (
+          <div className="item" key={`${item.name}${index}`}>
+            {item.name}
+          </div>
+        ))}
+    </div>
   );
 };

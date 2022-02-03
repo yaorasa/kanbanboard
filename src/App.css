@@ -13,16 +13,16 @@
   }
 } */
 
-/* .App-header {
+.App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-} */
+}
 /* 
 .App-link {
   color: #61dafb;
@@ -36,3 +36,45 @@
     transform: rotate(360deg);
   }
 } */
+
+.DisplayBox {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 0 10px;
+}
+
+.statusBox{
+  background-color: rgb(240, 240, 240);
+  min-height: 70vh;
+  padding:10px;
+  margin-top: 15px;
+}
+
+.creatingItemClass{
+  margin:10px;
+}
+
+.item {
+  margin: 5px;
+  padding:10px;
+  background-color:#61dafb;
+}
+
+.looseItem {
+  margin-left: 10px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+
+button {
+  background-color:rgb(32, 94, 209);
+  border-radius: 4px;
+  color: white;
+  border: none;
+  padding:5px;
+  margin-left: 5px;
+}
