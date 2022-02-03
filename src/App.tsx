@@ -9,7 +9,7 @@ function App() {
         <p>Kanbanboard</p>
       </header>
       <CreateItemForm items={items} setItems ={setItems}/>
-      {/* <LooseItemsBox items={items} setItems ={setItems}/> */}
+      <LooseItemsBox items={items}/>
     </div>
   );
 }
@@ -27,9 +27,8 @@ const CreateItemForm = ((props:createItemProps) => {
   
   const handleSubmit = (evt:any) => {
       evt.preventDefault();
-      items.push({name: itemName});
+      setItems([...items,({name: itemName})]);
       console.log(items);
-      setItems(items);
       setItemName('');   
   }
   return (
@@ -45,29 +44,23 @@ const CreateItemForm = ((props:createItemProps) => {
       </label>
       <button type="submit" value="Create" >Create</button>
     </form>
-    {/* <span>{itemName}</span> */}
-    {items.map((item, index)=>{
-      return(
-      <div>
-       { `item ${index} : ${item.name}`}
-      </div>
-      )
-    })}
+    <span>{itemName}</span>
     </>
   );
 });
 
 const LooseItemsBox = ((props:{
   items:itemsType; 
-  setItems: (i:itemsType)=>void ;
 })=> {
-  const {items,setItems} = props;
+  const {items} = props;
   return (
     <>
-    {items.map((item)=>{
-      <div>
-        {item.name}
+    {items.map((item,index)=>{
+      return(
+      <div key={`${item.name}${index}`}>
+       { `item : ${item.name}`}
       </div>
+      )
     })}
   </>
   );
