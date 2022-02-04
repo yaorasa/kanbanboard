@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./App.css";
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
         <p>Kanbanboard</p>
       </header>
       <CreateItemForm items={items} setItems={setItems} />
-      <LooseItemsBox items={items} setItems={setItems} />
+      {/* <LooseItemsBox items={items} setItems={setItems} /> */}
       <DisplayBox items={items} setItems={setItems} />
     </div>
   );
@@ -75,7 +75,10 @@ const LooseItemsBox = (props: {
             <form>
               {itemName !== "" ? (
                 <div>
-                  <label style={{minWidth: '150px'}} htmlFor={itemName}>item: {itemName} </label>
+                  <label style={{ minWidth: "150px" }} htmlFor={itemName}>
+                    {" "}
+                    {itemName}{" "}
+                  </label>
                   <select name={itemName} onChange={handleChange}>
                     <option value="backlog">Backlog</option>
                     <option value="todo">To do</option>
@@ -106,23 +109,6 @@ const DisplayBox = (props: {
   );
 };
 
-const StatusBox = (props: {
-  items: itemsType;
-  setItems: (i: itemsType) => void;
-}) => {
-  const { items, setItems } = props;
-  return (
-    <>
-      {allStatus.map((status) => (
-        <div className="statusBox" key={status.key}>
-          <h1>{status.value}</h1>
-          <Item items={items} setItems={setItems} status={status.key} />
-        </div>
-      ))}
-    </>
-  );
-};
-
 const allStatus = [
   { key: "backlog", value: "Backlog" },
   { key: "todo", value: "To do" },
@@ -131,31 +117,91 @@ const allStatus = [
   { key: "test", value: "Test/Review" },
   { key: "done", value: "Done" },
 ];
-// const allStatus = [
-//    'backlog',
-//   'todo',
-//    'blocked',
-//    'inprogress',
-//    'test',
-//    'done'
-// ];
 
-const Item = (props: {
+const StatusBox = (props: {
   items: itemsType;
   setItems: (i: itemsType) => void;
-  status: string;
 }) => {
-  const { items, setItems, status } = props;
+  const { items, setItems } = props;
+  const [dragging, setDragging] = useState(false);
+  const dragItem: React.MutableRefObject<any> = useRef();
+  const dragNode: React.MutableRefObject<any> = useRef();
+
+  const handleDragStart = (
+    e: React.DragEvent<HTMLDivElement>,
+    item: { name: string; status: string }
+  ) => {
+    dragItem.current = item;
+    dragNode.current = e.target;
+    dragNode.current.addEventListener("dragend", handleDragEnd);
+    setTimeout(() => {
+      setDragging(true);
+    }, 0);
+  };
+
+  const handleDragEnter = (
+    e: React.DragEvent<HTMLDivElement>,
+    sIndex: number
+  ) => {
+    const currentItem = dragItem.current;
+    if (e.target !== dragNode.current) {
+      const newItems = items.map((item) => {
+        if (item.name === currentItem.name) {
+          return { name: currentItem.name, status: allStatus[sIndex].key };
+        }
+        return item;
+      });
+      setItems(newItems);
+    }
+  };
+
+  const handleDragEnd = () => {
+    dragNode.current.removeEventListener("dragend", handleDragEnd);
+    setDragging(false);
+    dragItem.current = null;
+    dragNode.current = null;
+  };
+  const getStyles = (item: { name: string; status: string }) => {
+    const currentItem = dragItem.current;
+    if (currentItem.name === item.name && currentItem.status === item.status) {
+      return "current item";
+    }
+    return "item";
+  };
+
+  let editable = true;
+
   return (
-    <div>
-      {items
-        .filter((item) => item.name !== "")
-        .filter((item) => item.status === status)
-        .map((item, index) => (
-          <div className="item" key={`${item.name}${index}`}>
-            {item.name}
+    <>
+      {allStatus.map((status, sIndex) => (
+        <div
+          className="statusBox"
+          key={status.key}
+          onDragEnter={dragging ? (e) => handleDragEnter(e, sIndex) : undefined}
+        >
+          <h1>{status.value}</h1>
+          <div>
+            {items
+              .filter((item) => item.name !== "")
+              .filter((item) => item.status === status.key)
+              .map((item, index) => (
+                <div
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item)}
+                  onDragEnter={
+                    dragging ? (e) => handleDragEnter(e, sIndex) : undefined
+                  }
+                  className={dragging ? getStyles(item) : "item"}
+                  key={`${item.name}${index}`}
+                  onDoubleClick={() => (editable = !editable)}
+                  contentEditable={editable}
+                >
+                  {item.name}
+                </div>
+              ))}
           </div>
-        ))}
-    </div>
+        </div>
+      ))}
+    </>
   );
 };
