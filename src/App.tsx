@@ -196,7 +196,6 @@ const StatusBox = (props: {
     <>
       {allStatus.map((status, sIndex) => (
         <div
-        
           className="statusBox"
           key={status.key}
           onDragEnter={dragging ? (e) => handleDragEnter(e, sIndex) : undefined}
