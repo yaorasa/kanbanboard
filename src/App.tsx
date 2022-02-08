@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import "./App.css";
+import Checkmark from "react-typescript-checkmark";
 
 function App() {
   const [items, setItems] = useState([{ name: "", status: "backlog" }]);
@@ -42,7 +43,7 @@ const CreateItemForm = (props: createItemProps) => {
             onChange={(e) => setItemName(e.target.value)}
           />
         </label>
-        <button type="submit" value="Create">
+        <button className="createButton" type="submit" value="Create">
           Create
         </button>
       </form>
@@ -124,6 +125,7 @@ const StatusBox = (props: {
 }) => {
   const { items, setItems } = props;
   const [dragging, setDragging] = useState(false);
+  const [editable, setEditable] = useState(false);
   const dragItem: React.MutableRefObject<any> = useRef();
   const dragNode: React.MutableRefObject<any> = useRef();
 
@@ -169,17 +171,47 @@ const StatusBox = (props: {
     return "item";
   };
 
-  let editable = true;
+  const handleEdit = (
+    adjustedItem: { name: string; status: string },
+    currentText: string | null
+  ) => {
+    if (currentText !== null) {
+      const newItems = items.map((i) => {
+        if (i.name === adjustedItem.name) {
+          return { name: currentText, status: i.status };
+        }
+        return i;
+      });
+      setItems(newItems);
+      setEditable(false);
+    }
+  };
+
+  const dragover = (event: any) => {
+    event.preventDefault();
+    event.dataTransfer.effectAllowed = "move";
+  };
 
   return (
     <>
       {allStatus.map((status, sIndex) => (
         <div
+        
           className="statusBox"
           key={status.key}
           onDragEnter={dragging ? (e) => handleDragEnter(e, sIndex) : undefined}
+          onDragOver={(e) => dragover(e)}
         >
-          <h1>{status.value}</h1>
+          <div className="statusHead">
+            <h1>{status.value}</h1>
+            <p>
+              {
+                items
+                  .filter((i) => i.status === status.key)
+                  .filter((i) => i.name !== "").length
+              }
+            </p>
+          </div>
           <div>
             {items
               .filter((item) => item.name !== "")
@@ -188,15 +220,23 @@ const StatusBox = (props: {
                 <div
                   draggable
                   onDragStart={(e) => handleDragStart(e, item)}
-                  onDragEnter={
-                    dragging ? (e) => handleDragEnter(e, sIndex) : undefined
-                  }
                   className={dragging ? getStyles(item) : "item"}
                   key={`${item.name}${index}`}
-                  onDoubleClick={() => (editable = !editable)}
+                  onDoubleClick={() => setEditable(!editable)}
                   contentEditable={editable}
+                  style={!editable ? { cursor: "grab" } : undefined}
+                  suppressContentEditableWarning={true}
+                  onBlur={(e) => handleEdit(item, e.currentTarget.textContent)}
+                  onDragOver={(e) => dragover(e)}
                 >
                   {item.name}
+                  {item.status === "done" ? (
+                    <Checkmark
+                      key={item.name}
+                      size={"sm"}
+                      backgroundColor={"rgb(32, 94, 209)"}
+                    />
+                  ) : null}
                 </div>
               ))}
           </div>
